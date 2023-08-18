@@ -1,0 +1,123 @@
+.error {
+  font-size: small;
+  margin: 0 0 0 3px;
+  color: rgb(233, 21, 21);
+}
+
+.error2 {
+  font-size: small;
+  margin: 0 0 0 3px;
+  color: rgb(233, 21, 21);
+}
+
+.escondido {
+  display: none;
+}
+
+#botonEstaticoVisualizar {
+  bottom: 0;
+  right: 0;
+  margin: 3em;
+  z-index: 1000;
+  position: fixed;
+}
+
+#botonEstaticoVisualizar button {
+  width: 6em;
+  height: 6em;
+}
+
+#botonEstaticoVisualizar button {
+  border-radius: 5em;
+  background-color: #1473e6;
+  border: 0px;
+  box-shadow: 2px 2px 11px 0px rgba(0, 0, 0, 0.75);
+  -webkit-box-shadow: 2px 2px 11px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 2px 2px 11px 0px rgba(0, 0, 0, 0.75);
+}
+
+#botonEstaticoVisualizar img {
+  filter: invert(100%);
+  pointer-events: none;
+}
+
+#botonEstaticoVisualizar:hover img {
+  filter: invert(33%) sepia(74%) saturate(1551%) hue-rotate(194deg)
+    brightness(96%) contrast(96%);
+  width: 3.0em;
+  height: auto;
+  pointer-events: none;
+}
+
+#botonEstaticoVisualizar:hover button {
+  background-color: #ffff;
+  transition: 0.2s;
+  width: 5.25em;
+  height: 5.25em;
+  margin: -0.1em;
+}
+
+#iconoDocumento {
+  width: 3em;
+  height: auto;
+}
+
+#botonEstaticoRegresar {
+  bottom: 0;
+  right: 7.8em;
+  margin: 3em;
+  z-index: 1000;
+  position: fixed;
+}
+
+#botonEstaticoRegresar button {
+  width: 6em;
+  height: 6em;
+}
+
+#botonEstaticoRegresar button {
+  border-radius: 5em;
+  background-color: #e61414;
+  border: 0px;
+  box-shadow: 2px 2px 11px 0px rgba(0, 0, 0, 0.75);
+  -webkit-box-shadow: 2px 2px 11px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 2px 2px 11px 0px rgba(0, 0, 0, 0.75);
+}
+
+#botonEstaticoRegresar img {
+  filter: invert(100%);
+  pointer-events: none;
+}
+
+#botonEstaticoRegresar:hover img {
+  filter: invert(18%) sepia(98%) saturate(4568%) hue-rotate(355deg)
+    brightness(93%) contrast(95%);
+  width: 3.0em;
+  height: auto;
+  pointer-events: none;
+}
+
+#botonEstaticoRegresar:hover button {
+  background-color: #ffff;
+  transition: 0.2s;
+  width: 5.25em;
+  height: 5.25em;
+  margin: -0.1em;
+}
+
+#iconoRegresar {
+  width: 3em;
+  height: auto;
+}
+
+.pieModal {
+  display: flex;
+  justify-content: flex-end;
+  width: 35%;
+}
+
+.modal-dialog.modal-xl.inputs-Acta input {
+  border: none;
+  border-bottom: 1px solid black;
+  text-align-last: center;
+}
