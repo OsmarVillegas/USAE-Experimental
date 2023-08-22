@@ -10,8 +10,15 @@
     </a>    
 
     <ul class="nav col-12 col-md-auto mb-2 ms-auto mb-md-0">
-      <li><a href="#" class="nav-link px-2 link-secondary">Manual de usuario</a></li>
-      <li><a routerLink="form" class="nav-link px-2 link-dark">Formulario</a></li>
+      
+      <ng-container *ngIf="auth.isAuthenticated$ | async; else ManualUsuario">
+        <li><a style="cursor: pointer;" class="nav-link px-2 link-secondary">Manual de Administrador</a></li>
+      </ng-container>
+
+      <ng-template #ManualUsuario>
+        <li><a style="cursor: pointer;" (click)="descargaDocumentoUsuario()"  class="nav-link px-2 link-secondary">Manual de Usuario</a></li>
+      </ng-template>
+
     </ul>
 
     <div class="col-md-3 text-end">

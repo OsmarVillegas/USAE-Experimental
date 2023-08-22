@@ -19,7 +19,6 @@ import { Curso } from '../admin-view/models/cursos';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Renderer2 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 
 declare var bootstrap: any;
 
@@ -44,6 +43,8 @@ export class Form2Component implements OnInit {
       puntaje: 10,
     },
   ];
+  centroTrabajo: any = [];
+  personal: any = []
 
   TotalPreparacionAcademica: number = 0;
   URL: string = 'https://experimental-kteg.vercel.app/api/';
@@ -156,7 +157,6 @@ export class Form2Component implements OnInit {
   constructor(
     private toastr: ToastrService,
     private renderer: Renderer2,
-    private http: HttpClient,
     private spinner: NgxSpinnerService
   ) {
     this.instanciaControlarFormulario = new controlarFormulario(
@@ -276,10 +276,10 @@ export class Form2Component implements OnInit {
     const rfc = this.form.rfc;
 
     // Buscar el personal en la lista a partir del RFC ingresado
-    const personalEncontrado = personal.find((p: Personal) => p.RFC === rfc);
+    const personalEncontrado = this.personal.find((p: Personal) => p.RFC === rfc);
 
     if (personalEncontrado) {
-      this.form.nombrepersonal = personalEncontrado.Nombre;
+      this.form.nombrepersonal = personalEncontrado.nombreEmpleado;
     } else {
       this.form.nombrepersonal = '';
     }
@@ -432,6 +432,20 @@ export class Form2Component implements OnInit {
     this.modificarRegistro = false;
     this.desempenoRedondeado = '0';
     this.activarBotonActa = false;
+
+    await this.sendRequestWithRetry(
+      this.URL + 'centroDeTrabajo',
+      this.requestOptions
+    ).then((post) => {
+      this.centroTrabajo = post;
+    });
+
+    await this.sendRequestWithRetry(
+      this.URL + 'empleados',
+      this.requestOptions
+    ).then((post) => {
+      this.personal = post;
+    });
 
     await this.sendRequestWithRetry(
       this.URL + 'datosGenerales',
@@ -985,101 +999,7 @@ export class Form2Component implements OnInit {
 
     return Acta;
   }
-
-  // calcularGradoEducativo(): void {
-  //   this.academico = 0;
-
-  //   let prim;
-  //   let primTotal;
-  //   let sec;
-  //   let secTotal;
-  //   let carreraC;
-  //   let carreraCTotal;
-  //   let lic;
-  //   let licTotal;
-
-  //   this.gradoEducativoNum <= 6 && this.gradoEducativoNum >= 1
-  //     ? (prim = true)
-  //     : (prim = false);
-  //   this.gradoEducativoNum <= 9 && this.gradoEducativoNum >= 7
-  //     ? (sec = true)
-  //     : (sec = false);
-  //   this.gradoEducativoNum <= 12 && this.gradoEducativoNum >= 10
-  //     ? (carreraC = true)
-  //     : (carreraC = false);
-  //   this.gradoEducativoNum <= 16 && this.gradoEducativoNum >= 13
-  //     ? (lic = true)
-  //     : (lic = false);
-
-  //   if (prim) {
-  //     for (let i = 0; this.gradoEducativoNum - 1 >= i; i++) {
-  //       this.academico += Number(
-  //         this.preparacionacademica_Backend.primaria[i].toFixed(3)
-  //       );
-  //       this.academico = Number(this.academico.toFixed(3));
-  //       this.academicoRedondeado = Number(this.academico.toFixed(3));
-  //     }
-  //   } else {
-  //     primTotal = this.preparacionacademica_Backend.primaria.reduce(
-  //       (a, b) => a + b,
-  //       0
-  //     );
-  //   }
-
-  //   if (sec) {
-  //     this.academico = this.preparacionacademica_Backend.primaria[5];
-  //     for (let i = 0; this.gradoEducativoNum - 7 >= i; i++) {
-  //       this.academico += Number(
-  //         this.preparacionacademica_Backend.secundaria[i].toFixed(3)
-  //       );
-  //       this.academico = Number(this.academico.toFixed(3));
-  //       this.academicoRedondeado = Number(this.academico.toFixed(3));
-  //     }
-  //   } else {
-  //     secTotal = this.preparacionacademica_Backend.secundaria.reduce(
-  //       (a, b) => a + b,
-  //       0
-  //     );
-  //   }
-
-  //   if (carreraC) {
-  //     this.academico =
-  //       this.preparacionacademica_Backend.primaria[5] +
-  //       this.preparacionacademica_Backend.secundaria[2];
-  //     for (let i = 0; this.gradoEducativoNum - 10 >= i; i++) {
-  //       this.academico += Number(
-  //         this.preparacionacademica_Backend.carreraC[i].toFixed(3)
-  //       );
-  //       this.academico = Number(this.academico.toFixed(3));
-  //       this.academicoRedondeado = Number(this.academico.toFixed(3));
-  //     }
-  //   } else {
-  //     carreraCTotal = this.preparacionacademica_Backend.carreraC.reduce(
-  //       (a, b) => a + b,
-  //       0
-  //     );
-  //   }
-
-  //   if (lic) {
-  //     this.academico =
-  //       this.preparacionacademica_Backend.primaria[5] +
-  //       this.preparacionacademica_Backend.secundaria[2] +
-  //       this.preparacionacademica_Backend.carreraC[2];
-  //     for (let i = 0; this.gradoEducativoNum - 13 >= i; i++) {
-  //       this.academico += Number(
-  //         this.preparacionacademica_Backend.licenciatura[i].toFixed(3)
-  //       );
-  //       this.academico = Number(this.academico.toFixed(3));
-  //       this.academicoRedondeado = Number(this.academico.toFixed(3));
-  //     }
-  //   } else {
-  //     licTotal = this.preparacionacademica_Backend.licenciatura.reduce(
-  //       (a, b) => a + b,
-  //       0
-  //     );
-  //   }
-  // }
-
+  
   EvaluarBotonActa(): void {
     const botonActa = document.getElementById(
       'botonDocumento'
@@ -2529,13 +2449,13 @@ export class Form2Component implements OnInit {
           page1.drawText(palabras[0], {
             x: 485,
             y: 455,
-            size: 9,
+            size: 8.2,
             font: helveticaFontBold,
           });
           page1.drawText(palabras[1], {
             x: 85,
             y: 439.5,
-            size: 7.7,
+            size: 8.2,
             font: helveticaFontBold,
           });
         } else {
@@ -3362,13 +3282,13 @@ export class Form2Component implements OnInit {
           page1.drawText(palabras[0], {
             x: 484,
             y: 448,
-            size: 9,
+            size: 8.2,
             font: helveticaFontBold,
           });
           page1.drawText(palabras[1], {
             x: 85,
             y: 432.5,
-            size: 7.8,
+            size: 8.2,
             font: helveticaFontBold,
           });
         } else {
@@ -5279,80 +5199,6 @@ export class Form2Component implements OnInit {
         });
 
         if (this.opcionesImprimir[0] == true) {
-          //////INICIA IMPRESIÓN DE NOMBRES DE CURSOS
-          let nombresCursos = '';
-          for (let i = 0; i < this.Cursos.length; i++) {
-            nombresCursos += '"' + this.Cursos[i].nombre + '", '; // Concatenar el nombre del curso y una coma
-          }
-          nombresCursos = nombresCursos.substring(0, nombresCursos.length - 2);
-
-          const chunkSize = 48;
-          let y = page1.getHeight() - 409; // Valor inicial de y
-
-          let remainingText = nombresCursos;
-          while (remainingText.length > 0) {
-            let chunk = remainingText.substring(0, chunkSize);
-
-            if (chunk.length >= chunkSize) {
-              const lastSpaceIndex = chunk.lastIndexOf(' ');
-              if (lastSpaceIndex !== -1) {
-                chunk = chunk.substring(0, lastSpaceIndex);
-              }
-            }
-
-            if (chunk.charAt(0) === ' ') {
-              chunk = chunk.substring(1);
-            }
-
-            page2.drawText(chunk, {
-              x: 300,
-              y: y,
-              size: 5.7,
-              font: helveticaFont,
-            });
-
-            remainingText = remainingText.substring(chunk.length).trim();
-            y -= 6.5; // Disminuye el valor de y en 4 puntos
-          }
-
-          if (this.Cursos.length === 1) {
-            page2.drawText('Puntos Obtenidos cuando compruebe el curso', {
-              x: 300,
-              y: page1.getHeight() - 402.5,
-              size: 5.7,
-              font: helveticaFont,
-            });
-          } else {
-            page2.drawText('Puntos Obtenidos cuando compruebe los cursos', {
-              x: 300,
-              y: page1.getHeight() - 402.5,
-              size: 5.7,
-              font: helveticaFont,
-            });
-          }
-
-          //////////////////////TERMINA IMPRESIÓN DE NOMBRES DE CURSOS
-
-          let sumaPuntajesCursos = 0;
-          // Recorre el arreglo de Cursos y suma los puntajes
-          for (let i = 0; i < this.Cursos.length; i++) {
-            sumaPuntajesCursos += this.Cursos[i].puntaje;
-          }
-
-          page2.drawText(sumaPuntajesCursos.toString(), {
-            x: 478.5,
-            y: page1.getHeight() - 376,
-            size: 5.2,
-            font: helveticaFontBold,
-          });
-
-          page2.drawText(this.TotalPreparacionAcademica.toString(), {
-            x: 513,
-            y: page1.getHeight() - 340.3,
-            size: 4.8,
-            font: helveticaFontBold,
-          });
-
           if (registro.nombrepersonal.length >= 34) {
             page1.drawText(registro.nombrepersonal, {
               x: 96.5,
@@ -6078,10 +5924,86 @@ export class Form2Component implements OnInit {
             font: helveticaFontBold,
             color: rgb(1, 0, 0),
           });
+
+          page2.drawText(this.TotalPreparacionAcademica.toString(), {
+            x: 513,
+            y: page1.getHeight() - 340.3,
+            size: 4.8,
+            font: helveticaFontBold,
+          });
+
         }
 
         if (this.opcionesImprimir[4] == true) {
           // Cursos
+
+          //////INICIA IMPRESIÓN DE NOMBRES DE CURSOS
+          let nombresCursos = '';
+          for (let i = 0; i < this.Cursos.length; i++) {
+            nombresCursos += '"' + this.Cursos[i].nombre + '", '; // Concatenar el nombre del curso y una coma
+          }
+          nombresCursos = nombresCursos.substring(0, nombresCursos.length - 2);
+
+          const chunkSize = 48;
+          let y = page1.getHeight() - 409; // Valor inicial de y
+
+          let remainingText = nombresCursos;
+          while (remainingText.length > 0) {
+            let chunk = remainingText.substring(0, chunkSize);
+
+            if (chunk.length >= chunkSize) {
+              const lastSpaceIndex = chunk.lastIndexOf(' ');
+              if (lastSpaceIndex !== -1) {
+                chunk = chunk.substring(0, lastSpaceIndex);
+              }
+            }
+
+            if (chunk.charAt(0) === ' ') {
+              chunk = chunk.substring(1);
+            }
+
+            page2.drawText(chunk, {
+              x: 300,
+              y: y,
+              size: 5.7,
+              font: helveticaFont,
+            });
+
+            remainingText = remainingText.substring(chunk.length).trim();
+            y -= 6.5; // Disminuye el valor de y en 4 puntos
+          }
+
+          if (this.Cursos.length === 1) {
+            page2.drawText('Puntos Obtenidos cuando compruebe el curso', {
+              x: 300,
+              y: page1.getHeight() - 402.5,
+              size: 5.7,
+              font: helveticaFont,
+            });
+          } else {
+            page2.drawText('Puntos Obtenidos cuando compruebe los cursos', {
+              x: 300,
+              y: page1.getHeight() - 402.5,
+              size: 5.7,
+              font: helveticaFont,
+            });
+          }
+
+          //////////////////////TERMINA IMPRESIÓN DE NOMBRES DE CURSOS
+
+          let sumaPuntajesCursos = 0;
+          // Recorre el arreglo de Cursos y suma los puntajes
+          for (let i = 0; i < this.Cursos.length; i++) {
+            sumaPuntajesCursos += this.Cursos[i].puntaje;
+          }
+
+          page2.drawText(sumaPuntajesCursos.toString(), {
+            x: 478.5,
+            y: page1.getHeight() - 376,
+            size: 5.2,
+            font: helveticaFontBold,
+          });
+
           page2.drawText(registro.cursos.toString(), {
             x: 462,
             y: page1.getHeight() - 417,
@@ -6098,14 +6020,14 @@ export class Form2Component implements OnInit {
             color: rgb(1, 0, 0),
           });
 
-          const chunkSize = 100;
+          const chunkSize1 = 100;
           let yy = page1.getHeight() - 550; // Valor inicial de y
 
-          let remainingText = registro.observaciones.replace(/\n/g, ' ');
-          while (remainingText.length > 0) {
-            let chunk = remainingText.substring(0, chunkSize);
+          let remainingText1 = registro.observaciones.replace(/\n/g, ' ');
+          while (remainingText1.length > 0) {
+            let chunk = remainingText1.substring(0, chunkSize1);
 
-            if (chunk.length >= chunkSize) {
+            if (chunk.length >= chunkSize1) {
               const lastSpaceIndex = chunk.lastIndexOf(' ');
               if (lastSpaceIndex !== -1) {
                 chunk = chunk.substring(0, lastSpaceIndex);
@@ -6124,7 +6046,7 @@ export class Form2Component implements OnInit {
               color: rgb(0, 0, 0.5),
             });
 
-            remainingText = remainingText.substring(chunk.length).trim();
+            remainingText1 = remainingText1.substring(chunk.length).trim();
             yy -= 9.5; // Disminuye el valor de y en 9.5 puntos
           }
         }
@@ -6159,20 +6081,6 @@ export class Form2Component implements OnInit {
           for (let i = 0; i < this.Cursos.length; i++) {
             sumaPuntajesCursos += this.Cursos[i].puntaje;
           }
-
-          page2.drawText(sumaPuntajesCursos.toString(), {
-            x: 478.5,
-            y: page1.getHeight() - 376,
-            size: 5.2,
-            font: helveticaFontBold,
-          });
-
-          page2.drawText(this.TotalPreparacionAcademica.toString(), {
-            x: 513,
-            y: page1.getHeight() - 340.3,
-            size: 4.8,
-            font: helveticaFontBold,
-          });
 
           if (registro.nombrepersonal.length >= 34) {
             page1.drawText(registro.nombrepersonal, {
@@ -6400,491 +6308,6 @@ export class Form2Component implements OnInit {
             color: rgb(1, 0, 0),
           });
         }
-
-        //INICIO IMPRESION DE DATOS ANTIGUEDAD
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[0].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 270,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[1].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[2].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 289,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[3].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 296.4,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[4].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 306,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[5].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 317,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[6].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 324.3,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[7].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 331.7,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[8].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 340.3,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[9].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 349,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[10].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 359.6,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[11].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 369.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[12].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 376.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[13].toString(),
-          {
-            x: 140,
-            y: page1.getHeight() - 383.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[14].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 270,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[15].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[16].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 289,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[17].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 296.4,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[18].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 306,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[19].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 317,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[20].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 324.3,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[21].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 331.7,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[22].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 340.3,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[23].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 349,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[24].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 359.6,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[25].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 369.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[26].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 376.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.antiguedad_Backend.valoresAntiguedad[27].toString(),
-          {
-            x: 261.5,
-            y: page1.getHeight() - 383.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        //FINAL IMPRESION DE DATOS ANTIGUEDAD
-
-        //INICIO IMPRESION PREPARACION ACADEMICA
-        page2.drawText(
-          this.preparacionacademica_Backend.primaria[0].toString(),
-          {
-            x: 356.5,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.primaria[1].toString(),
-          {
-            x: 383.5,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.primaria[2].toString(),
-          {
-            x: 408.5,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.primaria[3].toString(),
-          {
-            x: 431,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.primaria[4].toString(),
-          {
-            x: 450,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.primaria[5].toString(),
-          {
-            x: 471,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.primaria[5].toString(),
-          {
-            x: 513,
-            y: page1.getHeight() - 280.5,
-            size: 5,
-            font: helveticaFontBold,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.secundaria[0].toString(),
-          {
-            x: 356.5,
-            y: page1.getHeight() - 289,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.secundaria[1].toString(),
-          {
-            x: 383.5,
-            y: page1.getHeight() - 289,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.secundaria[2].toString(),
-          {
-            x: 408.5,
-            y: page1.getHeight() - 289,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.secundaria[2].toString(),
-          {
-            x: 513,
-            y: page1.getHeight() - 289,
-            size: 5,
-            font: helveticaFontBold,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.carreraC[0].toString(),
-          {
-            x: 356.5,
-            y: page1.getHeight() - 313.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.carreraC[1].toString(),
-          {
-            x: 383.5,
-            y: page1.getHeight() - 313.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.carreraC[2].toString(),
-          {
-            x: 408.5,
-            y: page1.getHeight() - 313.5,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.carreraC[2].toString(),
-          {
-            x: 513,
-            y: page1.getHeight() - 313.5,
-            size: 5,
-            font: helveticaFontBold,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.licenciatura[0].toString(),
-          {
-            x: 356.5,
-            y: page1.getHeight() - 331.7,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.licenciatura[1].toString(),
-          {
-            x: 383.5,
-            y: page1.getHeight() - 331.7,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.licenciatura[2].toString(),
-          {
-            x: 408.5,
-            y: page1.getHeight() - 331.7,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.licenciatura[3].toString(),
-          {
-            x: 431,
-            y: page1.getHeight() - 331.7,
-            size: 5,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          }
-        );
-        page2.drawText(
-          this.preparacionacademica_Backend.licenciatura[3].toString(),
-          {
-            x: 513,
-            y: page1.getHeight() - 331.7,
-            size: 5,
-            font: helveticaFontBold,
-            color: rgb(0, 0, 0),
-          }
-        );
 
         //FINAL IMPRESION PREPARACION ACADEMICA
         if (this.opcionesImprimir[2] == true) {

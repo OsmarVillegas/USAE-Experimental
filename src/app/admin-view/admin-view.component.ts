@@ -1,11 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { FormControl, NgForm } from '@angular/forms';
 import { NgxSpinnerService } from 'ngx-spinner';
 
 import { DatosGenerales } from './models/datosGenerales';
 import { Antiguedad } from './models/antiguedad';
 import { preaparacionAcademica } from './models/preaparacionAcademica';
 import { Curso } from './models/cursos';
+import { Centro } from './models/centro';
+import { Empleados } from './models/empleados';
+import { debounceTime } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 @Component({
   selector: 'app-admin-view',
@@ -45,7 +49,24 @@ export class AdminViewComponent implements OnInit {
     },
   ];
 
-  modoImpresion: boolean[] = [ false , true];
+  CentrosDeTrabajo: any = [];
+
+  Empleados: any = [];
+
+  ejemplo: any;
+
+  Personal = [
+    {
+      RFC: 'AAAV870205SX6',
+      Nombre: 'VICTOR MANUEL ALVAREZ AGUILAR',
+    },
+    {
+      RFC: 'AABE820901356',
+      Nombre: 'EFRAIN ALFARO BARBOSA',
+    },
+  ];
+
+  modoImpresion: boolean[] = [false, true];
   visibilidadModoImpresion: boolean[] = [false, true];
   modoEdicion: boolean = false;
   programasDesarrollo: number = 0;
@@ -61,8 +82,11 @@ export class AdminViewComponent implements OnInit {
   MAX_RETRIES: number = 6; // Número máximo de intentos
   BASE_INTERVAL_MS: number = 2000; // Intervalo base en milisegundos
   requestOptions = {
-    method: 'GET'
+    method: 'GET',
   };
+  formatos: boolean = true;
+  centroDeTrabajo: boolean = false;
+  empleados: boolean = false;
 
   //Variables formato
   Formato_FCAPS_Seleccionado: File = new File([], '');
@@ -86,6 +110,10 @@ export class AdminViewComponent implements OnInit {
   antiguedad: Antiguedad;
   preparacionacademica: preaparacionAcademica;
   curso: Curso;
+  centro: Centro;
+  empleado: Empleados;
+  buscarClave = new FormControl();
+  buscarNombre = new FormControl();
 
   //Preparación académica
   puntajeTotalMaximo: number = 0;
@@ -99,7 +127,7 @@ export class AdminViewComponent implements OnInit {
   }
 
   //Cursos
-  constructor(private spinner: NgxSpinnerService) {
+  constructor(private spinner: NgxSpinnerService, private http: HttpClient) {
     this.datosgenerales = {
       _id: '0',
       anio: '0',
@@ -136,7 +164,208 @@ export class AdminViewComponent implements OnInit {
           nombre: '',
           puntaje: 0,
         });
+
+    this.CentrosDeTrabajo.length >= 1
+      ? (this.centro = {
+          _id: '',
+          id: this.CentrosDeTrabajo[this.CentrosDeTrabajo.length - 1].id + 1,
+          claveCentro: '',
+          nombreCentro: '',
+        })
+      : (this.centro = {
+          _id: '',
+          id: 0,
+          claveCentro: '',
+          nombreCentro: '',
+        });
+
+    this.Empleados.length >= 1
+      ? (this.empleado = {
+          _id: '',
+          id: this.Empleados[this.Empleados.length - 1].id + 1,
+          RFC: '',
+          nombreEmpleado: '',
+        })
+      : (this.empleado = {
+          _id: '',
+          id: 0,
+          RFC: '',
+          nombreEmpleado: '',
+        });
   }
+
+  // Inicio Centro de Trabajo
+
+  buscarCentroDeTrabajo() {
+    this.buscarClave.valueChanges.pipe(debounceTime(500)).subscribe((query) => {
+      this.obtenerCentroDeTrabajo(query);
+    });
+  }
+
+  async obtenerCentroDeTrabajo(query: string) {
+    this.http
+      .get('http://localhost:4001/api/' + 'centroDeTrabajo', {
+        params: new HttpParams().set('claveCentro', query),
+      })
+      .subscribe((result) => {
+        this.CentrosDeTrabajo = result;
+      });
+  }
+
+  async agregarCentroDeTrabajo() {
+    try {
+      let idCentro: string = '';
+
+      this.CentrosDeTrabajo.length >= 1
+        ? (this.centro.id =
+            this.CentrosDeTrabajo[this.CentrosDeTrabajo.length - 1].id + 1)
+        : (this.centro.id = 0);
+
+      await fetch(this.URL + 'centroDeTrabajo', {
+        method: 'POST', // or 'PUT'
+        body: JSON.stringify(this.centro), // data can be `string` or {object}!
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .catch((error) => console.error('Error:', error))
+        .then((response) => {
+          console.log('Success:', response);
+          idCentro = response._id;
+        });
+
+      this.centro._id = idCentro;
+
+      this.CentrosDeTrabajo.push(this.centro);
+
+      this.centro = {
+        _id: '',
+        id: this.Cursos[this.Cursos.length - 1].id + 1,
+        claveCentro: '',
+        nombreCentro: '',
+      };
+    } catch (err) {
+      alert('Ha ocurrido un error.');
+    }
+  }
+
+  async eliminarCentroDeTrabajo(id: number) {
+    let posicionDelCentro = 0;
+
+    for (let i = 0; this.CentrosDeTrabajo.length - 1 >= i; i++) {
+      if (this.CentrosDeTrabajo[i].id === id) {
+        posicionDelCentro = i;
+        break;
+      }
+    }
+
+    if (confirm('¿Está seguro que desea eliminarlo?')) {
+      await fetch(
+        this.URL +
+          'centroDeTrabajo/' +
+          this.CentrosDeTrabajo[posicionDelCentro]._id,
+        {
+          method: 'delete',
+        }
+      ).then((response) =>
+        response.json().then((json) => {
+          return json;
+        })
+      );
+
+      this.CentrosDeTrabajo.splice(posicionDelCentro, 1);
+    }
+  }
+
+  // Fin Centro de Trabajo
+
+  // Inicio Empleado
+
+  buscarEmpleado() {
+    this.buscarNombre.valueChanges
+      .pipe(debounceTime(500))
+      .subscribe((query) => {
+        this.obtenerEmpleado(query);
+        console.log(query)
+      });
+  }
+
+  async obtenerEmpleado(query: string) {
+    this.http
+      .get(this.URL + 'empleados', {
+        params: new HttpParams().set('nombre', query),
+      })
+      .subscribe((result) => {
+        console.log(result);
+      });
+  }
+
+  async agregarEmpleado() {
+    try {
+      let idEmpleados: string = '';
+
+      this.Empleados.length >= 1
+        ? (this.empleado.id =
+            this.Empleados[this.Empleados.length - 1].id + 1)
+        : (this.empleado.id = 0);
+
+      await fetch(this.URL + 'empleados', {
+        method: 'POST', // or 'PUT'
+        body: JSON.stringify(this.empleado), // data can be `string` or {object}!
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .catch((error) => console.error('Error:', error))
+        .then((response) => {
+          console.log('Success:', response);
+          idEmpleados = response._id;
+        });
+
+      this.empleado._id = idEmpleados;
+
+      this.Empleados.push(this.empleado);
+
+      this.empleado = {
+        _id: '',
+        id: this.Cursos[this.Cursos.length - 1].id + 1,
+        RFC: '',
+        nombreEmpleado: '',
+      };
+    } catch (err) {
+      alert('Ha ocurrido un error.');
+    }
+  }
+
+  async eliminarEmpleado(id: number) {
+    let posicionDelEmpleado = 0;
+
+    for (let i = 0; this.Empleados.length - 1 >= i; i++) {
+      if (this.Empleados[i].id === id) {
+        posicionDelEmpleado = i;
+        break;
+      }
+    }
+
+    if (confirm('¿Está seguro que desea eliminarlo?')) {
+      await fetch(
+        this.URL + 'empleados/' + this.Empleados[posicionDelEmpleado]._id,
+        {
+          method: 'delete',
+        }
+      ).then((response) =>
+        response.json().then((json) => {
+          return json;
+        })
+      );
+
+      this.Empleados.splice(posicionDelEmpleado, 1);
+    }
+  }
+
+  // Fin Centro de Trabajo
 
   async sendRequestWithRetry(
     url: string,
@@ -169,39 +398,59 @@ export class AdminViewComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.spinner.show();
+    this.buscarCentroDeTrabajo();
+    this.buscarEmpleado();
+    // this.spinner.show();
 
-    await this.sendRequestWithRetry(this.URL + 'datosGenerales', this.requestOptions).then((post) => {
-      this.datosgenerales = post[0];
+    await this.sendRequestWithRetry(
+      this.URL + 'empleados',
+      this.requestOptions
+    ).then((post) => {
+      this.Empleados = post;
     });
 
-    await this.sendRequestWithRetry(this.URL + 'antiguedad', this.requestOptions).then((post) => {
-      this.antiguedad = post[0];
+    await this.sendRequestWithRetry(
+      this.URL + 'centroDeTrabajo',
+      this.requestOptions
+    ).then((post) => {
+      this.CentrosDeTrabajo = post;
     });
 
-    await this.sendRequestWithRetry(this.URL + 'preparacionAcademica', this.requestOptions).then((post) => {
-      this.preparacionacademica = post[0];
-    });
+    // await this.sendRequestWithRetry(this.URL + 'datosGenerales', this.requestOptions).then((post) => {
+    //   this.datosgenerales = post[0];
+    // });
 
-    await this.sendRequestWithRetry(this.URL + 'cursos', this.requestOptions).then((post) => {
-      this.Cursos = post;
-    });
+    // await this.sendRequestWithRetry(this.URL + 'antiguedad', this.requestOptions).then((post) => {
+    //   this.antiguedad = post[0];
+    // });
 
-    await this.sendRequestWithRetry(this.URL + 'modoImpresion', this.requestOptions).then((post) => {
-      this.ObjetoImpersion = post;
-    });
-    
+    // await this.sendRequestWithRetry(this.URL + 'preparacionAcademica', this.requestOptions).then((post) => {
+    //   this.preparacionacademica = post[0];
+    // });
+
+    // await this.sendRequestWithRetry(this.URL + 'cursos', this.requestOptions).then((post) => {
+    //   this.Cursos = post;
+    // });
+
+    // await this.sendRequestWithRetry(this.URL + 'modoImpresion', this.requestOptions).then((post) => {
+    //   this.ObjetoImpersion = post;
+    // });
+
     setTimeout(() => {
       this.modoImpresion = [...this.ObjetoImpersion[0].validar];
       this.visibilidadModoImpresion = [...this.modoImpresion];
       this.rellenarFormularioAntiguedad();
     }, 500);
 
-    const FCAPS = document.getElementById('btnFormato_FCAPS') as HTMLInputElement;
+    const FCAPS = document.getElementById(
+      'btnFormato_FCAPS'
+    ) as HTMLInputElement;
     const centrales = document.getElementById(
       'btnCentralesDRs'
     ) as HTMLInputElement;
-    const educativa = document.getElementById('btnEducativa') as HTMLInputElement;
+    const educativa = document.getElementById(
+      'btnEducativa'
+    ) as HTMLInputElement;
     const SNTE = document.getElementById('btnSNTE') as HTMLButtonElement;
     const Jefatura = document.getElementById('btnJefatura') as HTMLInputElement;
 
@@ -284,7 +533,7 @@ export class AdminViewComponent implements OnInit {
 
   // Cursos
   async addCursos() {
-    let idParaObjeto;
+    let idParaObjeto: string = '';
     this.Cursos.length >= 1
       ? (this.curso.id = this.Cursos[this.Cursos.length - 1].id + 1)
       : (this.curso.id = 0);
@@ -300,7 +549,10 @@ export class AdminViewComponent implements OnInit {
       .catch((error) => console.error('Error:', error))
       .then((response) => {
         console.log('Success:', response);
+        idParaObjeto = response._id;
       });
+
+    this.curso._id = idParaObjeto;
 
     this.Cursos.push(this.curso);
 
@@ -440,16 +692,16 @@ export class AdminViewComponent implements OnInit {
 
   evaluarFormulario() {
     // Datos Generales
-    const anios = document.getElementById('anio') as HTMLInputElement;
-    const periodo = document.getElementById('periodo') as HTMLInputElement;
+    // const anios = document.getElementById('anio') as HTMLInputElement;
+    // const periodo = document.getElementById('periodo') as HTMLInputElement;
     const municipio = document.getElementById('municipio') as HTMLInputElement;
-    const etapa = document.getElementById('etapa') as HTMLInputElement;
-    const etapaLetra = document.getElementById(
-      'etapaLetra'
-    ) as HTMLInputElement;
-    const fechaLimite = document.getElementById(
-      'fechaLimite'
-    ) as HTMLInputElement;
+    // const etapa = document.getElementById('etapa') as HTMLInputElement;
+    // const etapaLetra = document.getElementById(
+    //   'etapaLetra'
+    // ) as HTMLInputElement;
+    // const fechaLimite = document.getElementById(
+    //   'fechaLimite'
+    // ) as HTMLInputElement;
 
     if (municipio.value.length >= 1) {
       this.evaluar1 = true;
