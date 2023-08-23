@@ -74,6 +74,8 @@ export class AdminViewComponent implements OnInit {
   posicionDelCurso: number = 0;
   habilitarBotonAgregarCurso: boolean = false;
   habilitarBotonEnviarInformacion: boolean = false;
+  habilitarFormularioCentrosDeTrabajo: boolean = false;
+  habilitarFormularioEmpleados: boolean = false;
   evaluar1: boolean = false;
   evaluar2: boolean = false;
   evaluar3: boolean = false;
@@ -87,6 +89,8 @@ export class AdminViewComponent implements OnInit {
   formatos: boolean = true;
   centroDeTrabajo: boolean = false;
   empleados: boolean = false;
+  pageCentros: number = 1;
+  pageEmpleados: number = 1;
 
   //Variables formato
   Formato_FCAPS_Seleccionado: File = new File([], '');
@@ -204,7 +208,7 @@ export class AdminViewComponent implements OnInit {
 
   async obtenerCentroDeTrabajo(query: string) {
     this.http
-      .get('http://localhost:4001/api/' + 'centroDeTrabajo', {
+      .get(this.URL + 'centroDeTrabajo', {
         params: new HttpParams().set('claveCentro', query),
       })
       .subscribe((result) => {
@@ -297,7 +301,7 @@ export class AdminViewComponent implements OnInit {
         params: new HttpParams().set('nombre', query),
       })
       .subscribe((result) => {
-        console.log(result);
+        this.Empleados = result;
       });
   }
 
@@ -375,7 +379,6 @@ export class AdminViewComponent implements OnInit {
     try {
       const response = await fetch(url);
       if (response.status === 200) {
-        this.spinner.hide();
         return response.json();
       } else {
         if (retries == 6) {
@@ -398,9 +401,11 @@ export class AdminViewComponent implements OnInit {
   }
 
   async ngOnInit() {
+    this.spinner.show();
+
     this.buscarCentroDeTrabajo();
     this.buscarEmpleado();
-    // this.spinner.show();
+
 
     await this.sendRequestWithRetry(
       this.URL + 'empleados',
@@ -416,29 +421,30 @@ export class AdminViewComponent implements OnInit {
       this.CentrosDeTrabajo = post;
     });
 
-    // await this.sendRequestWithRetry(this.URL + 'datosGenerales', this.requestOptions).then((post) => {
-    //   this.datosgenerales = post[0];
-    // });
+    await this.sendRequestWithRetry(this.URL + 'datosGenerales', this.requestOptions).then((post) => {
+      this.datosgenerales = post[0];
+    });
 
-    // await this.sendRequestWithRetry(this.URL + 'antiguedad', this.requestOptions).then((post) => {
-    //   this.antiguedad = post[0];
-    // });
+    await this.sendRequestWithRetry(this.URL + 'antiguedad', this.requestOptions).then((post) => {
+      this.antiguedad = post[0];
+    });
 
-    // await this.sendRequestWithRetry(this.URL + 'preparacionAcademica', this.requestOptions).then((post) => {
-    //   this.preparacionacademica = post[0];
-    // });
+    await this.sendRequestWithRetry(this.URL + 'preparacionAcademica', this.requestOptions).then((post) => {
+      this.preparacionacademica = post[0];
+    });
 
-    // await this.sendRequestWithRetry(this.URL + 'cursos', this.requestOptions).then((post) => {
-    //   this.Cursos = post;
-    // });
+    await this.sendRequestWithRetry(this.URL + 'cursos', this.requestOptions).then((post) => {
+      this.Cursos = post;
+    });
 
-    // await this.sendRequestWithRetry(this.URL + 'modoImpresion', this.requestOptions).then((post) => {
-    //   this.ObjetoImpersion = post;
-    // });
+    await this.sendRequestWithRetry(this.URL + 'modoImpresion', this.requestOptions).then((post) => {
+      this.ObjetoImpersion = post;
+    });
 
     setTimeout(() => {
       this.modoImpresion = [...this.ObjetoImpersion[0].validar];
       this.visibilidadModoImpresion = [...this.modoImpresion];
+      this.spinner.hide();
       this.rellenarFormularioAntiguedad();
     }, 500);
 
@@ -463,23 +469,21 @@ export class AdminViewComponent implements OnInit {
     // Variables que se repiten constantemente
     setInterval(() => {
       this.calcularPuntajeTotalMaximo();
-      this.evaluandoCurso();
-      this.evaluarFormulario();
-      // this.totalAntiguedad = this.puntajeAnios.reduce((a, b) => a + b, 0);
-      this.totalAntiguedad = this.puntajeAnios[27];
-      this.programasDesarrollo = this.Cursos.reduce((a, b) => a + b.puntaje, 0);
-
-      this.total =
-        this.totalAntiguedad +
-        this.puntajeTotalMaximo +
-        this.programasDesarrollo +
-        60;
-
-      let puntajeCurso = document.getElementById('puntaje') as HTMLInputElement;
-
-      if (puntajeCurso.value == '0') {
-        puntajeCurso.value = '';
+      if (this.formatos) {
+        this.evaluandoCurso();
+        this.evaluarFormulario();
       }
+
+      if (this.centroDeTrabajo) {
+        this.evaluandoCentroDeTrabajo();
+      }
+      
+      if (this.empleados) {
+        this.evaluandoEmpleados();
+      }
+
+      // this.totalAntiguedad = this.puntajeAnios.reduce((a, b) => a + b, 0);
+
     }, 200);
   }
 
@@ -566,6 +570,37 @@ export class AdminViewComponent implements OnInit {
     this.programasDesarrollo = this.Cursos.reduce((a, b) => a + b.puntaje, 0);
   }
 
+  // Evaluar formularios
+  evaluandoCentroDeTrabajo() {
+    const claveCentroTrabajo = document.getElementById('claveCentro') as HTMLInputElement;
+    const nombreCentroTrabajo = document.getElementById('nombreCentro') as HTMLInputElement;
+
+    if(claveCentroTrabajo.value.length >= 1 && nombreCentroTrabajo.value.length >= 1){
+      this.habilitarFormularioCentrosDeTrabajo = true;
+    } else {
+      this.habilitarFormularioCentrosDeTrabajo = false;
+    }
+  }
+
+  evaluandoEmpleados() {
+    const empleadoRFC = document.getElementById('empleadoRFC') as HTMLInputElement;
+    const empleadoNombre = document.getElementById('nombreEmpleado') as HTMLInputElement;
+
+    let valirEmpleadoRFC = false;
+
+    if (this.rfcValido(empleadoRFC.value)) {
+      valirEmpleadoRFC = true;
+    } else {
+      valirEmpleadoRFC = false;
+    }
+
+    if(valirEmpleadoRFC === true && empleadoNombre.value.length >= 1){
+      this.habilitarFormularioEmpleados = true;
+    } else {
+      this.habilitarFormularioEmpleados = false;
+    }
+  }
+
   evaluandoCurso() {
     const cursoNombre = document.getElementById(
       'nombreCurso'
@@ -578,6 +613,7 @@ export class AdminViewComponent implements OnInit {
       this.habilitarBotonAgregarCurso = false;
     }
   }
+  // Evaluar formularios
 
   async deleteCursos(id: number) {
     console.log(id);
@@ -1219,4 +1255,47 @@ export class AdminViewComponent implements OnInit {
       }
     }
   }
+
+  rfcValido(rfc: string, aceptarGenerico = true) {
+    const re =
+      /^([A-ZÑ&]{3,4}) ?(?:- ?)?(\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])) ?(?:- ?)?([A-Z\d]{2})([A\d])$/;
+    var validado = rfc.match(re);
+  
+    if (!validado)
+      //Coincide con el formato general del regex?
+      return false;
+  
+    //Separar el dígito verificador del resto del RFC
+    const digitoVerificador = validado.pop(),
+      rfcSinDigito = validado.slice(1).join(''),
+      len = rfcSinDigito.length,
+      //Obtener el digito esperado
+      diccionario = '0123456789ABCDEFGHIJKLMN&OPQRSTUVWXYZ Ñ',
+      indice = len + 1;
+    var suma, digitoEsperado;
+  
+    if (len == 12) suma = 0;
+    else suma = 481; //Ajuste para persona moral
+  
+    for (var i = 0; i < len; i++)
+      suma += diccionario.indexOf(rfcSinDigito.charAt(i)) * (indice - i);
+    digitoEsperado = 11 - (suma % 11);
+    if (digitoEsperado == 11) digitoEsperado = 0;
+    else if (digitoEsperado == 10) digitoEsperado = 'A';
+  
+    //El dígito verificador coincide con el esperado?
+    // o es un RFC Genérico (ventas a público general)?
+    if (
+      digitoVerificador != digitoEsperado &&
+      (!aceptarGenerico || rfcSinDigito + digitoVerificador != 'XAXX010101000')
+    )
+      return false;
+    else if (
+      !aceptarGenerico &&
+      rfcSinDigito + digitoVerificador == 'XEXX010101000'
+    )
+      return false;
+    return rfcSinDigito + digitoVerificador;
+  }
+
 }

@@ -48,7 +48,7 @@
       <label for="clavecentro" class="form-label"><strong>Clave de centro de trabajo</strong></label>
       <select name="clavecentro" id="clavecentro" [(ngModel)]="form.clavecentro" class="form-select"
         (change)="onClaveCentroChange();" [disabled]="this.activado">
-        <option *ngFor="let centro of centroTrabajo" value={{centro.claveCentro}}>{{ centro.nombreCentro }}
+        <option *ngFor="let centro of centroTrabajo" value={{centro.claveCentro}}>{{ centro.claveCentro }}
         </option>
       </select>
       <p class="error escondido">Este apartado es necesario para continuar</p>

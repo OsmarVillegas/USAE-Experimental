@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { centros } from '../models/centros';
+import { Centro } from '../admin-view/models/centro';
 import { Formulario } from './Funciones/form-data.interface';
 import { Personal, personal } from '../models/personal';
 import {
@@ -43,8 +43,6 @@ export class Form2Component implements OnInit {
       puntaje: 10,
     },
   ];
-  centroTrabajo: any = [];
-  personal: any = []
 
   TotalPreparacionAcademica: number = 0;
   URL: string = 'https://experimental-kteg.vercel.app/api/';
@@ -70,7 +68,7 @@ export class Form2Component implements OnInit {
 
   // Variables para manipular la información almacenada
   registros!: any[];
-  centros = [...centros];
+  // centros = [...centros];
   aniosAntiguedad: Number = 0;
   opcionesImprimir: Boolean[] = [true, true, true, true, true];
   gradoEducativoNum: number = 0;
@@ -110,6 +108,8 @@ export class Form2Component implements OnInit {
   fechaInicioActa: string = '';
   fechaFinActa: string = '';
   cursosCompletados: boolean[] = [];
+  centroTrabajo: any = [];
+  personal: any = []
 
   // Funciones
   protected instanciaControlarFormulario: controlarFormulario;
@@ -288,11 +288,13 @@ export class Form2Component implements OnInit {
   // Clave de centro codigo
   onClaveCentroChange() {
     const selectedClave = this.form.clavecentro;
-    const selectedCentro = this.centros.find(
-      (centro) => centro.clave_de_centro === selectedClave
+    console.log(selectedClave)
+    const selectedCentro = this.centroTrabajo.find(
+      (centro: any) => {return centro.claveCentro === selectedClave}
     );
+    console.log(selectedCentro)
     if (selectedCentro) {
-      this.form.centrotrabajo = selectedCentro.centro_de_trabajo;
+      this.form.centrotrabajo = selectedCentro.nombreCentro;
     } else {
       this.form.centrotrabajo = '';
     }
@@ -2060,13 +2062,13 @@ export class Form2Component implements OnInit {
     this.resultt = this.form.resultadoTotal.toFixed(2);
   }
 
-  findKey(): void {
-    this.centros.forEach((data) => {
-      if (data.centro_de_trabajo === this.form.centrotrabajo) {
-        this.form.clavecentro = data.clave_de_centro;
-      }
-    });
-  }
+  // findKey(): void {
+  //   this.centros.forEach((data) => {
+  //     if (data.centro_de_trabajo === this.form.centrotrabajo) {
+  //       this.form.clavecentro = data.clave_de_centro;
+  //     }
+  //   });
+  // }
 
   async generatePDF1(): Promise<void> {
     if (this.modoImpresion[0]) {
@@ -5167,7 +5169,9 @@ export class Form2Component implements OnInit {
           color: rgb(0, 0, 0),
         });
 
-        page1.drawText(this.datosgenerales_Backend.anio.toString(), {
+        let anio = parseInt(this.datosgenerales_Backend.anio) - 1;
+
+        page1.drawText(anio.toString(), {
           x: 315.8,
           y: page1.getHeight() - 703.4,
           size: 4.8,

@@ -18,6 +18,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { HttpClientModule } from '@angular/common/http';
 
 import { NgxSpinnerModule } from "ngx-spinner";
+import { NgxPaginationModule } from 'ngx-pagination';
 
 // Import the module from the SDK
 import { AuthModule } from '@auth0/auth0-angular';
@@ -41,6 +42,7 @@ import { CrudsAdministrarComponent } from './cruds-administrar/cruds-administrar
     BrowserAnimationsModule,
     HttpClientModule,
     NgxSpinnerModule.forRoot({ type: 'ball-scale-multiple' }),
+    NgxPaginationModule,
     ToastrModule.forRoot({
       maxOpened: 6,
       preventDuplicates: true,
