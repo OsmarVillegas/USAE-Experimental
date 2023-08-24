@@ -482,7 +482,9 @@ export class AdminViewComponent implements OnInit {
         this.evaluandoEmpleados();
       }
 
-      // this.totalAntiguedad = this.puntajeAnios.reduce((a, b) => a + b, 0);
+      this.totalAntiguedad = this.puntajeAnios.reduce((a, b) => a + b, 0);
+      this.programasDesarrollo = this.Cursos.reduce((a, b) => a + b.puntaje, 0);
+      this.total = this.totalAntiguedad + this.programasDesarrollo + this.puntajeTotalMaximo + 60;
 
     }, 200);
   }

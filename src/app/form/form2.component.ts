@@ -406,7 +406,6 @@ export class Form2Component implements OnInit {
     try {
       const response = await fetch(url);
       if (response.status === 200) {
-        this.spinner.hide();
         return response.json();
       } else {
         if (retries == 6) {
@@ -491,6 +490,7 @@ export class Form2Component implements OnInit {
 
     this.cursosCompletados = new Array(this.Cursos.length - 1).fill(false);
     this.declararValoresFormulario();
+    this.spinner.hide();
 
     setInterval(() => {
       this.activado = this.instanciaControlarFormulario.BloqueoInteligente(
