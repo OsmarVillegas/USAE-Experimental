@@ -86,7 +86,7 @@
     <div class="col-md-6">
       <label for="telefono" class="form-label"><strong>Teléfono de su centro de trabajo</strong></label>
       <input id="telefono" type="text" name="telefono" [(ngModel)]="form.telefonocentro" class="form-control"
-        maxlength="12">
+        maxlength="10" [disabled]="this.activado">
       <p class="error escondido">Este apartado es necesario para continuar</p>
       <p class="error2 escondido">Este apartado requiere un formato de 10 dígitos </p>
     </div>
