@@ -12,7 +12,7 @@
     <ul class="nav col-12 col-md-auto mb-2 ms-auto mb-md-0">
       
       <ng-container *ngIf="auth.isAuthenticated$ | async; else ManualUsuario">
-        <li><a style="cursor: pointer;" class="nav-link px-2 link-secondary">Manual de Administrador</a></li>
+        <li><a style="cursor: pointer;" (click)="descargaDocumentoAdmin()" class="nav-link px-2 link-secondary">Manual de Administrador</a></li>
       </ng-container>
 
       <ng-template #ManualUsuario>

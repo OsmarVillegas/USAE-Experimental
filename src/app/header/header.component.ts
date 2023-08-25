@@ -23,9 +23,33 @@ export class HeaderComponent {
     this.auth.logout({ returnTo: window.location.origin } as LogoutOptions);
   }
 
+  async descargaDocumentoAdmin() {
+    try {
+      const pdfUrl = '../../assets/formats/Manual_Para_Administrador.pdf';
+      const a = document.createElement('a');
+      a.href = pdfUrl;
+      a.download = 'Manual_De_Administrador.pdf';
+      a.target = '_blank'; // Abre el enlace en una nueva ventana o pestaña (opcional)
+      a.click();
+
+      this.toastr.success(
+        'Se ha descargado el manual de administrador',
+        'Manual de administrador ha sido descargado',
+        {
+          timeOut: 5000,
+          positionClass: 'toast-top-right',
+          progressBar: true,
+        }
+      );
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   async descargaDocumentoUsuario() {
     try {
-      const pdfUrl = '../../assets/formats/Manual_De_Usuario.pdf';
+      const pdfUrl = 'https://experimental-kteg.vercel.app/api/files/Usuario';
       const a = document.createElement('a');
       a.href = pdfUrl;
       a.download = 'Manual_De_Usuario.pdf';
@@ -46,6 +70,5 @@ export class HeaderComponent {
       console.log(err);
     }
   }
-
   
 }

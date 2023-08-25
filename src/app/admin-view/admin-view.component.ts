@@ -88,6 +88,7 @@ export class AdminViewComponent implements OnInit {
   formatos: boolean = true;
   centroDeTrabajo: boolean = false;
   empleados: boolean = false;
+  guiaUsuarios: boolean = false;
   pageCentros: number = 1;
   pageEmpleados: number = 1;
 
@@ -99,6 +100,7 @@ export class AdminViewComponent implements OnInit {
   Formato_Inscripciones_Seleccionado: File = new File([], '');
   Formato_SNTE_Seleccionado: File = new File([], '');
   Formato_Jefatura_Seleccionado: File = new File([], '');
+  Formato_Guia_Usuario_Seleccionado: File = new File([], '');
 
   Formato_FCAPS_Nombre: string = '';
   Formato_CentralesDrs_Nombre: string = '';
@@ -107,6 +109,7 @@ export class AdminViewComponent implements OnInit {
   Formato_Inscripciones_Nombre: string = '';
   Formato_SNTE_Nombre: string = '';
   Formato_Jefatura_Nombre: string = '';
+  Formato_Guia_Usuario_Nombre: string = '';
 
   //Información que se recibe del backend
   datosgenerales: DatosGenerales;
@@ -201,7 +204,7 @@ export class AdminViewComponent implements OnInit {
 
   buscarCentroDeTrabajo() {
     this.buscarClave.valueChanges.pipe(debounceTime(500)).subscribe((query) => {
-      this.obtenerCentroDeTrabajo(query);
+      this.obtenerCentroDeTrabajo(query.toUpperCase());
     });
   }
 
@@ -289,7 +292,7 @@ export class AdminViewComponent implements OnInit {
     this.buscarNombre.valueChanges
       .pipe(debounceTime(500))
       .subscribe((query) => {
-        this.obtenerEmpleado(query);
+        this.obtenerEmpleado(query.toUpperCase());
       });
   }
 
@@ -458,11 +461,16 @@ export class AdminViewComponent implements OnInit {
     const SNTE = document.getElementById('btnSNTE') as HTMLButtonElement;
     const Jefatura = document.getElementById('btnJefatura') as HTMLInputElement;
 
+
     FCAPS.disabled = true;
     centrales.disabled = true;
     educativa.disabled = true;
     SNTE.disabled = true;
     Jefatura.disabled = true;
+
+    
+    let comprobar_1 = true;
+    let comprobar_2 = true;
 
     // Variables que se repiten constantemente
     setInterval(() => {
@@ -470,20 +478,60 @@ export class AdminViewComponent implements OnInit {
       if (this.formatos) {
         this.evaluandoCurso();
         this.evaluarFormulario();
+
+        if(comprobar_1){
+          const FCAPS = document.getElementById(
+            'btnFormato_FCAPS'
+          ) as HTMLInputElement;
+          const centrales = document.getElementById(
+            'btnCentralesDRs'
+          ) as HTMLInputElement;
+          const educativa = document.getElementById(
+            'btnEducativa'
+          ) as HTMLInputElement;
+          const SNTE = document.getElementById('btnSNTE') as HTMLButtonElement;
+          const Jefatura = document.getElementById('btnJefatura') as HTMLInputElement;
+
+          FCAPS.disabled = true;
+          centrales.disabled = true;
+          educativa.disabled = true;
+          SNTE.disabled = true;
+          Jefatura.disabled = true;
+
+          comprobar_1 = false;
+          comprobar_2 = true;
+        }
+
       }
 
       if (this.centroDeTrabajo) {
         this.evaluandoCentroDeTrabajo();
+
+        comprobar_1 = true;
+        comprobar_2 = true;
       }
       
       if (this.empleados) {
         this.evaluandoEmpleados();
+
+        comprobar_1 = true;
+        comprobar_2 = true;
+      }
+
+      if (this.guiaUsuarios) {
+        if(comprobar_2) {
+          const GuiaUsuarios = document.getElementById('btnGuiaUsuario') as HTMLInputElement;
+          GuiaUsuarios.disabled = true;
+
+          comprobar_1 = true;
+          comprobar_2 = false;
+        }
       }
 
       this.programasDesarrollo = this.Cursos.reduce((a, b) => a + b.puntaje, 0);
       this.total = this.puntajeAnios[27] + this.programasDesarrollo + this.puntajeTotalMaximo + 60;
 
-    }, 200);
+    }, 100);
   }
 
   async seleccionarModoImpresion() {
@@ -925,7 +973,7 @@ export class AdminViewComponent implements OnInit {
     try {
       this.Formato_FCAPS_Seleccionado = evento.target.files[0];
       this.Formato_FCAPS_Nombre = this.Formato_FCAPS_Seleccionado.name;
-      if (this.Formato_CentralesDrs_Seleccionado) {
+      if (this.Formato_FCAPS_Seleccionado) {
         FCAPS.disabled = false;
       }
     } catch (e: any) {
@@ -1025,7 +1073,7 @@ export class AdminViewComponent implements OnInit {
       this.Formato_Educativa_Seleccionado = evento.target.files[0];
       this.Formato_Educativa_Nombre = this.Formato_Educativa_Seleccionado.name;
 
-      if (this.Formato_CentralesDrs_Seleccionado) {
+      if (this.Formato_Educativa_Seleccionado) {
         educativa.disabled = false;
       }
     } catch (e: any) {
@@ -1074,7 +1122,7 @@ export class AdminViewComponent implements OnInit {
       this.Formato_Horario_Seleccionado = evento.target.files[0];
       this.Formato_Horario_Nombre = this.Formato_Horario_Seleccionado.name;
 
-      if (this.Formato_CentralesDrs_Seleccionado) {
+      if (this.Formato_Horario_Seleccionado) {
         Horario.disabled = false;
       }
     } catch (e: any) {
@@ -1125,7 +1173,7 @@ export class AdminViewComponent implements OnInit {
       this.Formato_Inscripciones_Seleccionado = evento.target.files[0];
       this.Formato_Inscripciones_Nombre =
         this.Formato_Inscripciones_Seleccionado.name;
-      if (this.Formato_CentralesDrs_Seleccionado) {
+      if (this.Formato_Inscripciones_Seleccionado) {
         Inscripcion.disabled = false;
       }
     } catch (e: any) {
@@ -1171,7 +1219,7 @@ export class AdminViewComponent implements OnInit {
     try {
       this.Formato_Educativa_Seleccionado = evento.target.files[0];
       this.Formato_Educativa_Nombre = this.Formato_Educativa_Seleccionado.name;
-      if (this.Formato_CentralesDrs_Seleccionado) {
+      if (this.Formato_Educativa_Seleccionado) {
         SNTE.disabled = false;
       }
     } catch (e: any) {
@@ -1216,7 +1264,7 @@ export class AdminViewComponent implements OnInit {
     try {
       this.Formato_Educativa_Seleccionado = evento.target.files[0];
       this.Formato_Educativa_Nombre = this.Formato_Educativa_Seleccionado.name;
-      if (this.Formato_CentralesDrs_Seleccionado) {
+      if (this.Formato_Educativa_Seleccionado) {
         Jefatura.disabled = false;
       }
     } catch (e: any) {
@@ -1233,6 +1281,51 @@ export class AdminViewComponent implements OnInit {
       formData.append('file', this.Formato_Educativa_Seleccionado);
 
       await fetch(this.URL + 'files/Jefatura', {
+        method: 'POST',
+        body: formData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            this.validacionArchivo = true;
+          } else {
+            this.validacionArchivo = false;
+          }
+        })
+        .catch((error) => {
+          this.validacionArchivo = false;
+        });
+
+      if (this.validacionArchivo) {
+        alert('Archivo enviado');
+      } else {
+        alert('ERROR, archivo no enviado');
+      }
+    }
+  }
+
+  cargarArchivo_GuiaUsuario(evento: any) {
+    let GuiaUsuarios = document.getElementById('btnGuiaUsuario') as HTMLInputElement;
+
+    try {
+      this.Formato_Guia_Usuario_Seleccionado = evento.target.files[0];
+      this.Formato_Educativa_Nombre = this.Formato_Guia_Usuario_Seleccionado.name;
+      if (this.Formato_Guia_Usuario_Seleccionado) {
+        GuiaUsuarios.disabled = false;
+      }
+    } catch (e: any) {
+      GuiaUsuarios.disabled = true;
+    }
+  }
+
+  async enviarArchivo_GuiaUsuario(evento: any) {
+    evento.preventDefault();
+    this.validacionArchivo = true;
+
+    if (this.Formato_Guia_Usuario_Seleccionado) {
+      const formData = new FormData();
+      formData.append('file', this.Formato_Guia_Usuario_Seleccionado);
+
+      await fetch(this.URL + 'files/Usuario', {
         method: 'POST',
         body: formData,
       })

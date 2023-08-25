@@ -14,18 +14,23 @@
 <ul class="nav nav-tabs">
   <li class="nav-item">
     <a *ngIf="formatos" style="cursor: default;" class="nav-link active" aria-current="page">Formatos</a>
-    <a *ngIf="!formatos" style="cursor: pointer;" (click)="empleados = false; centroDeTrabajo = false; formatos = true"
+    <a *ngIf="!formatos" style="cursor: pointer;" (click)="empleados = false; guiaUsuarios = false; centroDeTrabajo = false; formatos = true"
       class="nav-link" aria-current="page">Formatos</a>
   </li>
   <li class="nav-item">
     <a *ngIf="centroDeTrabajo" style="cursor: default;" class="nav-link active">Centros de trabajo</a>
     <a *ngIf="!centroDeTrabajo" style="cursor: pointer;"
-      (click)="formatos = false; empleados = false; centroDeTrabajo = true" class="nav-link">Centros de trabajo</a>
+      (click)="formatos = false; empleados = false; guiaUsuarios = false; centroDeTrabajo = true" class="nav-link">Centros de trabajo</a>
   </li>
   <li class="nav-item">
     <a *ngIf="empleados" style="cursor: default;" class="nav-link active">Empleados</a>
     <a *ngIf="!empleados" style="cursor: pointer;"
-      (click)="formatos = false; centroDeTrabajo = false; empleados = true; " class="nav-link">Empleados</a>
+      (click)="formatos = false; centroDeTrabajo = false; guiaUsuarios = false; empleados = true; " class="nav-link">Empleados</a>
+  </li>
+  <li class="nav-item">
+    <a *ngIf="guiaUsuarios" style="cursor: default;" class="nav-link active">Actualizar guias</a>
+    <a *ngIf="!guiaUsuarios" style="cursor: pointer;"
+      (click)="formatos = false; centroDeTrabajo = false; empleados = false; guiaUsuarios = true;" class="nav-link">Actualizar Guias</a>
   </li>
 </ul>
 
@@ -596,7 +601,7 @@
 
 <div *ngIf="empleados">
 
-  <label class="mt-3" for="BuscarNombre">Buscar nombre</label>
+  <label class="mt-3" for="BuscarNombre">Buscar RFC</label>
   <input class="ms-2 form-control" id="BuscarNombre" type="text" [formControl]="buscarNombre">
 
   <div style="display: flex; align-items: center; justify-content: center;" class="mt-5">
@@ -659,5 +664,22 @@
     </div>
   </div>
   <!-- fin modal -->
+
+</div>
+
+<div *ngIf="guiaUsuarios">
+
+  <form (submit)="enviarArchivo_GuiaUsuario($event)">
+    <div class="row mt-5 mb-3">
+      <div class="col-md-8 mt-2">
+        <label for="Guia_usuario" class="form-label"><strong>Guia usuario&nbsp;</strong></label>
+        <input class="form-control" type="file" id="Guia_usuario" single
+          (change)="cargarArchivo_GuiaUsuario($event)">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-success" id="btnGuiaUsuario" type="submit">Enviar archivo</button>
+      </div>
+    </div>
+  </form>
 
 </div>
