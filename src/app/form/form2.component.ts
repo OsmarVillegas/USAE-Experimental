@@ -5163,7 +5163,7 @@ export class Form2Component implements OnInit {
 
         page1.drawText(this.datosgenerales_Backend.anio.toString(), {
           x: 357,
-          y: page1.getHeight() - 92,
+          y: page1.getHeight() - 91.5,
           size: 5,
           font: helveticaFontBold,
           color: rgb(0, 0, 0),
@@ -5944,10 +5944,9 @@ export class Form2Component implements OnInit {
           //////INICIA IMPRESIÓN DE NOMBRES DE CURSOS
           let nombresCursos = '';
           for (let i = 0; i < this.Cursos.length; i++) {
-            nombresCursos += '"' + this.Cursos[i].nombre + '", '; // Concatenar el nombre del curso y una coma
+            nombresCursos += '"' + this.Cursos[i].nombre + '"' + ' '.repeat(48-this.Cursos.length); // Concatenar el nombre del curso
           }
-          nombresCursos = nombresCursos.substring(0, nombresCursos.length - 2);
-
+      
           const chunkSize = 48;
           let y = page1.getHeight() - 409; // Valor inicial de y
 
@@ -5967,7 +5966,7 @@ export class Form2Component implements OnInit {
             }
 
             page2.drawText(chunk, {
-              x: 300,
+              x: 301,
               y: y,
               size: 5.7,
               font: helveticaFont,
@@ -5979,14 +5978,14 @@ export class Form2Component implements OnInit {
 
           if (this.Cursos.length === 1) {
             page2.drawText('Puntos Obtenidos cuando compruebe el curso', {
-              x: 300,
+              x: 301,
               y: page1.getHeight() - 402.5,
               size: 5.7,
               font: helveticaFont,
             });
           } else {
             page2.drawText('Puntos Obtenidos cuando compruebe los cursos', {
-              x: 300,
+              x: 301,
               y: page1.getHeight() - 402.5,
               size: 5.7,
               font: helveticaFont,

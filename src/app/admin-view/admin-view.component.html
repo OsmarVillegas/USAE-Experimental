@@ -1,6 +1,6 @@
 <h2 class="text-center"><strong>Bienvenido administrador</strong></h2>
 <hr>
-<h4 class="text-center mt-4">Edición del formato FCAPS-3</h4>
+<h4 class="text-center mt-4">Edición de los formatos FCAPS-3 y FACOEPAB-001</h4>
 <ngx-spinner type="ball-scale-multiple"></ngx-spinner>
 
 <!-- Solicitud Datos Generales -->
@@ -297,7 +297,7 @@
   <div class="totalAnios text-center">
     <label for="totalAnios" type="text" class="form-label"><strong>Puntaje global máximo de sección:
         &nbsp;</strong></label>
-    <input type="text" id="totalAnios" name="totalAnios" readonly [(ngModel)]="totalAntiguedad" style="width: 8%;">
+    <input type="text" id="totalAnios" name="totalAnios" readonly [(ngModel)]="puntajeAnios[27]" style="width: 8%;">
   </div>
 
   <!-- FINAL ANTIGÜEDAD EN EL SERVICIO -->
@@ -499,7 +499,7 @@
         </tr>
         <tr>
           <th scope="row"><strong>Antigüedad en el servicio</strong></th>
-          <td> <input type="text" [(ngModel)]="totalAntiguedad" readonly> </td>
+          <td> <input type="text" [(ngModel)]="puntajeAnios[27]" readonly> </td>
         </tr>
         <tr>
           <th scope="row"><strong>Preparación académica</strong></th>

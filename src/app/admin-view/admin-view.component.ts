@@ -19,7 +19,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 export class AdminViewComponent implements OnInit {
   //Variables
   puntajeAnios: number[] = new Array(28).fill(0);
-  totalAntiguedad: number = 0;
   Cursos = [
     {
       _id: '0',
@@ -482,9 +481,8 @@ export class AdminViewComponent implements OnInit {
         this.evaluandoEmpleados();
       }
 
-      this.totalAntiguedad = this.puntajeAnios.reduce((a, b) => a + b, 0);
       this.programasDesarrollo = this.Cursos.reduce((a, b) => a + b.puntaje, 0);
-      this.total = this.totalAntiguedad + this.programasDesarrollo + this.puntajeTotalMaximo + 60;
+      this.total = this.puntajeAnios[27] + this.programasDesarrollo + this.puntajeTotalMaximo + 60;
 
     }, 200);
   }
