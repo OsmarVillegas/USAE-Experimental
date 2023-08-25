@@ -290,7 +290,6 @@ export class AdminViewComponent implements OnInit {
       .pipe(debounceTime(500))
       .subscribe((query) => {
         this.obtenerEmpleado(query);
-        console.log(query)
       });
   }
 
