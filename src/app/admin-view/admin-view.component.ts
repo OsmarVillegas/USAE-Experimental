@@ -716,6 +716,7 @@ export class AdminViewComponent implements OnInit {
 
   async enviarInformacion() {
     let comprobar = false;
+    this.spinner.show();
 
     try {
       await fetch(this.URL + 'datosGenerales/' + this.datosgenerales._id, {
@@ -729,7 +730,6 @@ export class AdminViewComponent implements OnInit {
         .catch((error) => console.error('Error:', error))
         .then((response) => {
           comprobar = true;
-          console.log('Success:', response);
         });
 
       await fetch(this.URL + 'antiguedad/' + this.antiguedad._id, {
@@ -743,7 +743,6 @@ export class AdminViewComponent implements OnInit {
         .catch((error) => console.error('Error:', error))
         .then((response) => {
           comprobar = true;
-          console.log('Success:', response);
         });
 
       await fetch(
@@ -760,8 +759,9 @@ export class AdminViewComponent implements OnInit {
         .catch((error) => console.error('Error:', error))
         .then((response) => {
           comprobar = true;
-          console.log('Success:', response);
         });
+      
+      this.spinner.hide();
 
       if (comprobar) {
         alert('Se ha modificado la información exitosamente');

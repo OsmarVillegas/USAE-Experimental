@@ -1,3 +1,11 @@
+<div class="alert alert-warning alert-dismissible fade show text-center" role="alert" *ngIf="alertaVersion">
+  <strong>Advertencia: </strong> El servidor ha actualizado la información del sistema. Elimine los registros almacenados previamente para acceder a la nueva versión.
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  <div class="d-flex aling-center justify-content-center">
+    <button class="btn btn-outline-primary mt-3" (click)="reinicioRapido()"> Reinicio rapido </button>
+  </div>
+</div>
+
 <h3 class="text-center">Evaluación de los cuatro factores</h3>
 <ngx-spinner type="ball-scale-multiple"></ngx-spinner>
 
@@ -86,9 +94,9 @@
     <div class="col-md-6">
       <label for="telefono" class="form-label"><strong>Teléfono de su centro de trabajo</strong></label>
       <input id="telefono" type="text" name="telefono" [(ngModel)]="form.telefonocentro" class="form-control"
-        maxlength="10" [disabled]="this.activado">
+        maxlength="12">
       <p class="error escondido">Este apartado es necesario para continuar</p>
-      <p class="error2 escondido">Este apartado requiere un formato de 10 dígitos </p>
+      <p class="error2 escondido">Este apartado requiere un formato de 10 dígitos, ejemplo: 919930196 </p>
     </div>
   </div>
 

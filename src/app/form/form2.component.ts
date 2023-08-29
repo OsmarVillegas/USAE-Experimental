@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { Centro } from '../admin-view/models/centro';
 import { Formulario } from './Funciones/form-data.interface';
 import { Personal, personal } from '../models/personal';
 import {
@@ -65,6 +64,9 @@ export class Form2Component implements OnInit {
   academico!: number;
   periodo!: string;
   resultt!: string;
+  datosGeneralesVersion!: any;
+  antiguedadVersion!: any;
+  preparacionAcademicaVersion!: any;
 
   // Variables para manipular la información almacenada
   registros!: any[];
@@ -84,6 +86,7 @@ export class Form2Component implements OnInit {
   modificarRegistro: boolean = false;
   activarBotonActa: boolean = false;
   generarActa: boolean = false;
+  alertaVersion: boolean = false;
   validezFormulario_Acta_SNTE = new Array(14).fill(false);
   validezFormulario_Acta_JEFATURA = new Array(13).fill(false);
   validezFormulario_Acta_DELEGACION_REGIONAL = new Array(11).fill(false);
@@ -109,7 +112,7 @@ export class Form2Component implements OnInit {
   fechaFinActa: string = '';
   cursosCompletados: boolean[] = [];
   centroTrabajo: any = [];
-  personal: any = []
+  personal: any = [];
 
   // Funciones
   protected instanciaControlarFormulario: controlarFormulario;
@@ -209,8 +212,23 @@ export class Form2Component implements OnInit {
     this.periodo = 'Enero-Diciembre ' + (this.currentYear - 1);
     // Recupera los datos del LocalStorage al inicializar el componente
     const storedData = localStorage.getItem('registros');
+    this.datosGeneralesVersion = localStorage.getItem('datosGeneralesVersion');
+    this.antiguedadVersion = localStorage.getItem('antiguedadVersion');
+    this.preparacionAcademicaVersion = localStorage.getItem(
+      'preparacionAcademicaVersion'
+    );
+
     // Si hay datos almacenados, conviértelos de nuevo a un objeto o matriz JSON
     this.registros = storedData ? JSON.parse(storedData) : [];
+    this.datosGeneralesVersion = this.datosGeneralesVersion
+      ? JSON.parse(this.datosGeneralesVersion)
+      : [];
+    this.antiguedadVersion = this.antiguedadVersion
+      ? JSON.parse(this.antiguedadVersion)
+      : [];
+    this.preparacionAcademicaVersion = this.preparacionAcademicaVersion
+      ? JSON.parse(this.preparacionAcademicaVersion)
+      : [];
 
     this.registros.length >= 1
       ? (this.form = {
@@ -230,7 +248,7 @@ export class Form2Component implements OnInit {
           municipio: this.registros[0].municipio,
           funcion: '',
           clavecentro: this.registros[0].clavecentro,
-          telefonocentro: this.registros[0].telefonocentro,
+          telefonocentro: '',
           dias: 365,
           cursos: 0,
           nuevo: true,
@@ -272,11 +290,21 @@ export class Form2Component implements OnInit {
         });
   }
 
+  reinicioRapido() {
+    this.eliminarTodosLosRegistros();
+
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
+  }
+
   autocompletarNombre() {
     const rfc = this.form.rfc;
 
     // Buscar el personal en la lista a partir del RFC ingresado
-    const personalEncontrado = this.personal.find((p: Personal) => p.RFC === rfc);
+    const personalEncontrado = this.personal.find(
+      (p: Personal) => p.RFC === rfc
+    );
 
     if (personalEncontrado) {
       this.form.nombrepersonal = personalEncontrado.nombreEmpleado;
@@ -288,11 +316,11 @@ export class Form2Component implements OnInit {
   // Clave de centro codigo
   onClaveCentroChange() {
     const selectedClave = this.form.clavecentro;
-    console.log(selectedClave)
-    const selectedCentro = this.centroTrabajo.find(
-      (centro: any) => {return centro.claveCentro === selectedClave}
-    );
-    console.log(selectedCentro)
+    console.log(selectedClave);
+    const selectedCentro = this.centroTrabajo.find((centro: any) => {
+      return centro.claveCentro === selectedClave;
+    });
+    console.log(selectedCentro);
     if (selectedCentro) {
       this.form.centrotrabajo = selectedCentro.nombreCentro;
     } else {
@@ -428,11 +456,46 @@ export class Form2Component implements OnInit {
   }
 
   async ngOnInit() {
+    let datosGeneralesValue: string;
+    let antiguedaValue: string;
+    let preparacionAcademicaValue: string;
+
     this.spinner.show();
 
     this.modificarRegistro = false;
     this.desempenoRedondeado = '0';
     this.activarBotonActa = false;
+
+    // Verificar versión de la información recibida del backend
+
+    await this.sendRequestWithRetry(
+      this.URL + 'datosGenerales',
+      this.requestOptions
+    ).then((post) => {
+      this.datosgenerales_Backend = post[0];
+      datosGeneralesValue = post[0].codigoVersion;
+    });
+
+    await this.sendRequestWithRetry(
+      this.URL + 'antiguedad',
+      this.requestOptions
+    ).then((post) => {
+      this.antiguedad_Backend = post[0];
+      antiguedaValue = post[0].codigoVersion;
+    });
+
+    await this.sendRequestWithRetry(
+      this.URL + 'preparacionAcademica',
+      this.requestOptions
+    ).then((post) => {
+      this.preparacionacademica_Backend = post[0];
+      this.TotalPreparacionAcademica =
+        this.preparacionacademica_Backend.primaria[5] +
+        this.preparacionacademica_Backend.secundaria[2] +
+        this.preparacionacademica_Backend.carreraC[2] +
+        this.preparacionacademica_Backend.licenciatura[3];
+      preparacionAcademicaValue = post[0].codigoVersion;
+    });
 
     await this.sendRequestWithRetry(
       this.URL + 'centroDeTrabajo',
@@ -446,32 +509,6 @@ export class Form2Component implements OnInit {
       this.requestOptions
     ).then((post) => {
       this.personal = post;
-    });
-
-    await this.sendRequestWithRetry(
-      this.URL + 'datosGenerales',
-      this.requestOptions
-    ).then((post) => {
-      this.datosgenerales_Backend = post[0];
-    });
-
-    await this.sendRequestWithRetry(
-      this.URL + 'antiguedad',
-      this.requestOptions
-    ).then((post) => {
-      this.antiguedad_Backend = post[0];
-    });
-
-    await this.sendRequestWithRetry(
-      this.URL + 'preparacionAcademica',
-      this.requestOptions
-    ).then((post) => {
-      this.preparacionacademica_Backend = post[0];
-      this.TotalPreparacionAcademica =
-        this.preparacionacademica_Backend.primaria[5] +
-        this.preparacionacademica_Backend.secundaria[2] +
-        this.preparacionacademica_Backend.carreraC[2] +
-        this.preparacionacademica_Backend.licenciatura[3];
     });
 
     await this.sendRequestWithRetry(
@@ -504,7 +541,60 @@ export class Form2Component implements OnInit {
       this.contarNuevosRegistros();
       this.calcularCursos();
       this.seccionesImprimir();
-      // this.calcularGradoEducativo();
+
+      if (
+        this.registros.length == 0 &&
+        this.datosGeneralesVersion != datosGeneralesValue &&
+        this.antiguedadVersion != antiguedaValue &&
+        this.preparacionAcademicaVersion != preparacionAcademicaValue
+      ) {
+        // Se guarda el codigo de version
+        localStorage.setItem(
+          'datosGeneralesVersion',
+          JSON.stringify(datosGeneralesValue)
+        );
+        localStorage.setItem(
+          'antiguedadVersion',
+          JSON.stringify(antiguedaValue)
+        );
+        localStorage.setItem(
+          'preparacionAcademicaVersion',
+          JSON.stringify(preparacionAcademicaValue)
+        );
+
+        this.datosGeneralesVersion = localStorage.getItem(
+          'datosGeneralesVersion'
+        );
+        this.antiguedadVersion = localStorage.getItem('antiguedadVersion');
+        this.preparacionAcademicaVersion = localStorage.getItem(
+          'preparacionAcademicaVersion'
+        );
+
+        this.datosGeneralesVersion = this.datosGeneralesVersion
+          ? JSON.parse(this.datosGeneralesVersion)
+          : [];
+        this.antiguedadVersion = this.antiguedadVersion
+          ? JSON.parse(this.antiguedadVersion)
+          : [];
+        this.preparacionAcademicaVersion = this.preparacionAcademicaVersion
+          ? JSON.parse(this.preparacionAcademicaVersion)
+          : [];
+
+        this.alertaVersion = false;
+        console.log('FALSE');
+      } else if (
+        this.registros.length >= 1 &&
+        this.datosGeneralesVersion != datosGeneralesValue &&
+        this.antiguedadVersion != antiguedaValue &&
+        this.preparacionAcademicaVersion != preparacionAcademicaValue
+      ) {
+        this.alertaVersion = true;
+      }
+
+      console.log("Datos generales Version: ")
+      console.log(this.datosGeneralesVersion);
+      console.log("Datos generales Values: ")
+      console.log(datosGeneralesValue);
 
       if (this.registros.length >= 1) {
         if (this.registros[0].tipoCentro === 'SNTE') {
@@ -1001,7 +1091,7 @@ export class Form2Component implements OnInit {
 
     return Acta;
   }
-  
+
   EvaluarBotonActa(): void {
     const botonActa = document.getElementById(
       'botonDocumento'
@@ -1604,7 +1694,7 @@ export class Form2Component implements OnInit {
         municipio: this.registros[0].municipio,
         funcion: '',
         clavecentro: this.registros[0].clavecentro,
-        telefonocentro: this.registros[0].telefonocentro,
+        telefonocentro: '',
         dias: 365,
         cursos: 0,
         nuevo: true,
@@ -1987,7 +2077,7 @@ export class Form2Component implements OnInit {
       municipio: this.registros[0].municipio,
       funcion: '',
       clavecentro: this.registros[0].clavecentro,
-      telefonocentro: this.registros[0].telefonocentro,
+      telefonocentro: '',
       dias: 365,
       cursos: 0,
       multiPuntajeyDias: 0,
@@ -5935,7 +6025,6 @@ export class Form2Component implements OnInit {
             size: 4.8,
             font: helveticaFontBold,
           });
-
         }
 
         if (this.opcionesImprimir[4] == true) {
@@ -5944,9 +6033,13 @@ export class Form2Component implements OnInit {
           //////INICIA IMPRESIÓN DE NOMBRES DE CURSOS
           let nombresCursos = '';
           for (let i = 0; i < this.Cursos.length; i++) {
-            nombresCursos += '"' + this.Cursos[i].nombre + '"' + ' '.repeat(48-this.Cursos.length); // Concatenar el nombre del curso
+            nombresCursos +=
+              '"' +
+              this.Cursos[i].nombre +
+              '"' +
+              ' '.repeat(48 - this.Cursos.length); // Concatenar el nombre del curso
           }
-      
+
           const chunkSize = 48;
           let y = page1.getHeight() - 409; // Valor inicial de y
 
